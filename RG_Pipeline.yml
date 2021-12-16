@@ -1,0 +1,37 @@
+# Starter pipeline
+
+steps:
+
+- checkout : self
+  clean: true
+- task: publishpipelineartifact@1
+  displayName: Publish Pipeline Artifact
+  inputs:
+    targetPath: $(System.DefaultWorkingDirectory)
+    artifactname: Devartifact
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: '$(System.DefaultWorkingDirectory)'
+    Contents: '**'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'    
+- task: AzureResourceManagerTemplateDeployment@3
+  inputs:
+    deploymentScope: 'Subscription'
+    azureResourceManagerConnection: 'Azure Pass - Sponsorship(8deb40cd-42fe-4464-9860-081d1267a1f0)'
+    subscriptionId: '8deb40cd-42fe-4464-9860-081d1267a1f0'
+    action: "Create or Update Resource Group"
+    ResourceGroupName: 'GSKRG'
+    location: 'East US'
+    templateLocation: 'Linked artifact'
+    csmFile: '$(Build.ArtifactStagingDirectory)/template.json'
+    csmParametersfile: '$(Build.ArtifactStagingDirectory)/parameters.json'
+    deploymentMode: 'Incremental'
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
